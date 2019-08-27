@@ -102,6 +102,7 @@
                                     <input type="datetime-local" class="form-control" id="waktu_berakhir" name="waktu_berakhir">
                                 </div>
                                 <button type="submit" class="btn btn-primary" style="float:right;">ADD</button>
+                                <div id="my-cancel-button" class="btn btn-danger" style="float:right;margin-right:10px;">CANCEL</div>
                             </form>
                         </div>
                         </div>
@@ -150,7 +151,8 @@
                         </div>
                     </div>
                 </div>
-                <!-- END MY FORM UPDATE-->        
+                <!-- END MY FORM UPDATE-->      
+                <script src="https://momentjs.com/downloads/moment.js"></script>  
                 <script>
                     function postAjax(url, data, success) {
                         var params = typeof data == 'string' ? data : Object.keys(data).map(
@@ -241,6 +243,18 @@
                             getEll('id', 'my-form-background-update').style.display = 'none';
                             getEll('id', 'my-form-update').style.display = 'none';
                         });
+
+                        end = moment().format('YYYY-MM-DD');
+                        var start = new Date();
+                        start = `${(start.getFullYear() - 100)}-01-01`;
+                            
+                        var disableDate = {
+                            start: start,
+                            end: end,
+                            overlap: false,
+                            rendering: 'background',
+                            color: 'white'
+                        }
 
                         var event = retrieveData('http://localhost/mydashboard/calendar/get_pembagian_tugas');
                         var task = retrieveData('http://localhost/mydashboard/calendar/get_tugas');
@@ -349,6 +363,11 @@
                                     getEll('id', 'waktu_mulai').value = newDate;
                                     getEll('id', 'waktu_berakhir').value = info.event._instance.range.end.toISOString().slice(0,11) + '00:00';
                                     getEll('id', 'id_petugas').selectedIndex = 0;
+                                    getEll('id', 'my-cancel-button').addEventListener('click', function(e){
+                                        getEll('id', 'my-form-background').style.display = 'none';
+                                        getEll('id', 'my-form').style.display = 'none';
+                                        info.event.remove();
+                                    });
                                 }
 
                             },
@@ -357,8 +376,12 @@
                                 // console.log(info.event.id);
                                 // console.log(info.event);
                             },
-                            events: event,
+                            events: [
+                                ...event,
+                                disableDate
+                            ],
                             drop: function(arg) {
+                                console.log('tes', arg);
                                 // is the "remove after drop" checkbox checked?
                                 if (document.getElementById('drop-remove').checked) {
                                     // if so, remove the element from the "Draggable Events" list
